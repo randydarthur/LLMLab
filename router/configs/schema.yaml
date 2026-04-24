@@ -1,0 +1,6 @@
+# Schema for validating agent configs
+required:
+  - name
+  - role
+  - tools
+  - memory_namespace

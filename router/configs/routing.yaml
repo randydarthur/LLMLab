@@ -1,0 +1,11 @@
+routing:
+  tasks:
+    chat:
+      model: "mistral:7b"
+
+    code:
+      model: "qwen3.5:2b"
+
+    reasoning:
+      model: "phi4-mini-reasoning:3.8b-q8_0"
+

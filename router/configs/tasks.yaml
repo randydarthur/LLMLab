@@ -1,0 +1,29 @@
+default_task: chat
+
+tasks:
+  chat:
+    keywords:
+      - "hello"
+      - "hi"
+      - "story"
+      - "explain"
+      - "tell me"
+      - "what is"
+
+  code:
+    keywords:
+      - "python"
+      - "function"
+      - "class"
+      - "bug"
+      - "write code"
+      - "fix"
+
+  reasoning:
+    keywords:
+      - "why"
+      - "analyze"
+      - "explain your reasoning"
+      - "step by step"
+      - "think"
+

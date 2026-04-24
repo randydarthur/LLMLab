@@ -1,0 +1,9 @@
+defaults:
+  model: qwen2.5
+  context_window: 32768
+  memory_root: "LLMLab/agents/_memory"
+  system_prompt: &default_system_prompt |
+    You are an LLM agent operating inside the LLMLab platform.
+  tools:
+    - search
+    - python

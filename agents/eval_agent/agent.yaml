@@ -1,0 +1,7 @@
+agent:
+  name: eval_agent
+  role: "Describe the role of eval_agent here."
+  memory_namespace: "eval_agent"
+  tools:
+    - search
+    - python

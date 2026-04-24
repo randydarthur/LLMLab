@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>io.llmlab.ollama</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>PYTHON_PATH</string>
+        <string>DAEMON_PATH</string>
+    </array>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>HOME</key>
+        <string>HOME_PATH</string>
+        <key>PATH</key>
+        <string>PATH_VALUE</string>
+    </dict>
+
+    <key>WorkingDirectory</key>
+    <string>HOME_PATH</string>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>KeepAlive</key>
+    <true/>
+
+    <key>LimitLoadToSessionType</key>
+    <string>Aqua</string>
+
+    <key>StandardOutPath</key>
+    <string>/tmp/llmlab-daemon.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/tmp/llmlab-daemon.err</string>
+</dict>
+</plist>
+

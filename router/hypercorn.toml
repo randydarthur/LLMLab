@@ -1,0 +1,70 @@
+###############################################
+# LLMLab Router — Hypercorn Configuration
+# Cross‑platform, uvloop‑optimized, clean logging,
+# graceful shutdown, and tuned for long‑running
+# chat/streaming workloads.
+###############################################
+
+# ---------------------------------------------
+# Bind address (cross‑platform safe)
+# ---------------------------------------------
+bind = ["0.0.0.0:8000"]
+
+# ---------------------------------------------
+# Worker model
+# uvloop = fastest event loop on Linux/macOS
+# Windows falls back gracefully to asyncio
+# ---------------------------------------------
+worker_class = "uvloop"
+
+# ---------------------------------------------
+# Number of workers
+# LLMLab Router is async and I/O bound.
+# 1–2 workers is ideal for local inference.
+# ---------------------------------------------
+workers = 1
+
+# ---------------------------------------------
+# HTTP protocol support
+# HTTP/1 is default; HTTP/2 optional
+# Uncomment to enable HTTP/2
+# ---------------------------------------------
+# alpn_protocols = ["h2", "http/1.1"]
+
+# ---------------------------------------------
+# Timeouts tuned for LLM workloads
+# LLMs can take time to generate responses.
+# ---------------------------------------------
+keep_alive_timeout = 10
+graceful_timeout = 20
+shutdown_timeout = 20
+
+# ---------------------------------------------
+# Max request size
+# Chat payloads are small; keep this modest.
+# ---------------------------------------------
+max_app_queue_size = 2048
+
+# ---------------------------------------------
+# Logging
+# Clean, operator‑grade logs.
+# ---------------------------------------------
+accesslog = "-"
+errorlog = "-"
+loglevel = "info"
+
+# ---------------------------------------------
+# Cross‑platform behavior
+# Disable features that behave differently
+# across Windows/macOS/Linux.
+# ---------------------------------------------
+reload = false
+use_reloader = false
+
+# ---------------------------------------------
+# SSL (optional)
+# Uncomment if you want HTTPS later.
+# ---------------------------------------------
+# certfile = "cert.pem"
+# keyfile = "key.pem"
+

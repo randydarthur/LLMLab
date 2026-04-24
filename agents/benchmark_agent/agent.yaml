@@ -1,0 +1,7 @@
+agent:
+  name: benchmark_agent
+  role: "Describe the role of benchmark_agent here."
+  memory_namespace: "benchmark_agent"
+  tools:
+    - search
+    - python

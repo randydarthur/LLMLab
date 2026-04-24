@@ -1,0 +1,140 @@
+OVERVIEW
+--------
+This module acts as a reconciliation controller for Ollama-based models:
+
+- Discovers models from Ollama manifests on disk.
+- Reconciles them with the registry.
+- Assigns deterministic ports per (repo, tag).
+- Cleans stale registry entries and OS-level services.
+- Logs every meaningful lifecycle action at operator-grade detail.
+
+KEY BEHAVIORS
+-------------
+
+1. Registry-first authority
+   - The registry is the source of truth for:
+     - service_name
+     - repo
+     - tag
+     - full_tag
+     - port
+     - model_dir
+   - discover_models() always returns models derived from the registry.
+
+2. Filesystem discovery (Ollama manifests)
+   - Uses a unified, cross-platform layout:
+     - Base:
+       - Linux/macOS: ~/.ollama
+       - Windows: %LOCALAPPDATA%\Ollama
+     - Manifests:
+       <base>/models/manifests/registry.ollama.ai/library/<repo>/<tag>
+   - For each <repo>/<tag> manifest file:
+     - repo = directory name
+     - tag = directory name
+     - full_tag = f"{repo}:{tag}"
+     - model_dir = base_dir (e.g., ~/.ollama)
+
+3. Deterministic ports (A2)
+   - Ports are assigned per (repo, tag).
+   - Base port: 30001.
+   - If registry is empty:
+     - Sort (repo, tag) pairs alphabetically.
+     - Assign ports: 30001 + index.
+   - If registry has entries:
+     - Keep existing ports.
+     - Assign new ports from the next available integer >= 30001.
+   - All port assignments are logged at INFO.
+
+4. Service naming (S3)
+   - Service names are always:
+     - ollama-<repo>-<normalized_tag>
+   - Tag normalization (T3):
+     - Lowercase.
+     - Keep alphanumerics, '-', '_', '.'.
+     - Replace everything else with '-'.
+   - This is backend-prefixed and future-proof for multiple backends:
+     - vllm-<repo>-<tag>, tgi-<repo>-<tag>, etc.
+
+5. Registry format (R2)
+   - Each registry entry stores:
+     - repo
+     - tag
+     - full_tag (e.g., "llama2:latest")
+     - port
+     - model_dir
+   - This preserves full fidelity while remaining easy to parse and extend.
+
+6. Stale registry cleanup (C1)
+   - If a registry entry (service_name) has (repo, tag) not present in filesystem discovery:
+     - Logs a WARN:
+       - "Registry entry <service> refers to missing model — removing"
+     - Calls unregister_service(service_name).
+     - Calls OS-level service cleanup (SVC1).
+     - Removes the entry from the in-memory registry snapshot.
+
+7. Stale OS-level service cleanup (SVC1)
+   - Linux:
+     - Looks for /etc/systemd/system/<service>.service.
+     - Attempts systemctl stop/disable.
+     - Removes the unit file.
+     - Runs systemctl daemon-reload.
+     - Logs WARN for stale service, ERROR for failures.
+   - macOS:
+     - Looks for ~/Library/LaunchAgents/<service>.plist.
+     - Attempts launchctl bootout/unload (best-effort).
+     - Removes the plist.
+     - Logs WARN for stale service, ERROR for failures.
+   - Windows:
+     - Uses sc.exe stop/delete (best-effort).
+     - Logs WARN for stale service, ERROR for failures.
+
+8. Registry rebuilds
+   - If registry is missing or empty and filesystem has models:
+     - Logs INFO:
+       - "Registry missing or empty — rebuilding from filesystem discovery"
+     - Discovers all models.
+     - Assigns deterministic ports.
+     - Registers each service via register_service().
+     - Logs each registration at INFO.
+     - Subsequent calls use the registry as the authoritative source.
+
+9. Discovery logging
+   - _maybe_log_discovery() logs only when:
+     - The snapshot of models changes, or
+     - The source changes.
+   - Logs at INFO:
+     - "Discovered models (from registry): {...}"
+     - "Discovered models (from filesystem/<source>): {...}"
+   - This avoids log spam while preserving visibility into state transitions.
+
+10. Error handling
+    - Malformed or unexpected filesystem structures:
+      - Logged at ERROR with path and exception.
+    - Failures in registry operations:
+      - Logged at ERROR with service name and exception.
+    - Failures in OS-level cleanup:
+      - Logged at ERROR with service name and exception.
+
+OPERATOR MENTAL MODEL
+---------------------
+
+- The filesystem (Ollama manifests) is the raw fact of what models exist.
+- The registry is the authoritative configuration for how LLMLab manages them:
+  - ports
+  - service names
+  - model_dir
+- discover_models() is the reconciliation loop:
+  - It ensures the registry and OS-level services match the filesystem.
+  - It assigns deterministic ports.
+  - It cleans up stale entries and services.
+  - It logs every meaningful action.
+
+If something looks wrong (e.g., a model missing, a port mismatch, a ghost service),
+the logs from this module will tell you exactly:
+
+- what was discovered,
+- what was removed,
+- what was registered,
+- what ports were assigned,
+- and why.
+

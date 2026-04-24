@@ -1,0 +1,7 @@
+agent:
+  name: router_assistant
+  role: "Describe the role of router_assistant here."
+  memory_namespace: "router_assistant"
+  tools:
+    - search
+    - python

@@ -1,0 +1,71 @@
+flowchart TD
+
+    subgraph API_Layer[API Layer]
+        A1[FastAPI app<br/>api/server.py]
+        A2[Chat routes<br/>api/routes.py]
+        A3[System routes<br/>api/system.py]
+    end
+
+    subgraph Core_Layer[Core Layer]
+        C1[ModelRegistry<br/>core/model_registry.py]
+        C2[SessionManager<br/>core/session_manager.py]
+        C3[RoutingEngine<br/>core/routing_engine.py]
+        C4[TaskClassifier<br/>core/task_classifier.py]
+        C5[BackendFactory<br/>core/backend_factory.py]
+        C6[BackendHealthGate<br/>core/backend_health.py]
+        C7[RouterLogger<br/>core/router_logger.py]
+        C8[ConfigLoader<br/>core/read_configs.py]
+    end
+
+    subgraph Backend_Layer[Backend Layer]
+        B0[BackendAdapter (abstract)<br/>backends/base.py]
+        B1[OllamaBackendAdapter<br/>backends/ollama_adapter.py]
+        %% future: LM Studio, vLLM, cloud
+    end
+
+    subgraph Infra[External Systems]
+        RDS[(Redis<br/>sessions)]
+        OLL[(Ollama servers)]
+        MON[(Prometheus / Scraper)]
+        TOOLS[(Clients / Agent frameworks)]
+    end
+
+    %% API wiring
+    TOOLS -->|OpenAI-compatible HTTP| A2
+    TOOLS -->|system/metrics/logs| A3
+
+    A1 --> A2
+    A1 --> A3
+
+    %% API → Core
+    A2 -->|Depends(get_engine)| C3
+    A2 -->|Depends(get_registry)| C1
+
+    A3 -->|health/metrics/stats| C1
+    A3 -->|health/metrics/stats| C5
+    A3 -->|health/metrics/stats| C6
+    A3 -->|logs| C7
+
+    %% Core wiring
+    A1 -->|load_router_config| C8
+
+    C3 -->|model lookup| C1
+    C3 -->|session metadata + history| C2
+    C3 -->|task classification| C4
+    C3 -->|backend adapter| C5
+    C3 -->|health gating| C6
+
+    C1 -->|discover backends + models| B1
+    C1 -->|list_backends| C5
+
+    C5 -->|create adapters| B1
+    C6 -->|is_available()| B1
+
+    C2 -->|Redis| RDS
+
+    B1 -->|HTTP /api/chat,/api/tags,/api/show| OLL
+
+    %% Observability
+    C7 -->|logs| A3
+    A3 -->|/v1/metrics| MON
+
