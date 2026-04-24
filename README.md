@@ -54,7 +54,7 @@ Each agent has isolated configs, memory, prompts, tests, and tools.
 
 ## Repository Structure
 
-...
+```
 LLMLab/
 ├── agents/          # Modular agents with configs, memory, prompts, tools
 ├── lab/             # Core LLMLab manager, TUI, services, utilities
@@ -65,4 +65,4 @@ LLMLab/
 ├── vscode/          # Editor configuration (extensions, settings, snippets)
 ├── notes/           # Operator notes and design docs
 └── repos/           # External repos (placeholder)
-...
+```
